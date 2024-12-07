@@ -10,6 +10,30 @@ import (
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Fprint
 
+type commandFunction func(string)
+
+var shellBuiltIn map[string]commandFunction
+
+func init() {
+	shellBuiltIn = map[string]commandFunction{
+		"echo": func(args string) {
+			fmt.Fprint(os.Stdout, args+"\n")
+		},
+		"exit": func(args string) {
+			if len(args) > 0 && args == "0" {
+				os.Exit(0)
+			}
+		},
+		"type": func(args string) {
+			if _, ok := shellBuiltIn[args]; ok {
+				fmt.Fprint(os.Stdout, args+" is a shell builtin\n")
+			} else {
+				fmt.Fprint(os.Stdout, args+": not found\n")
+			}
+		},
+	}
+}
+
 func main() {
 	// Uncomment this block to pass the first stage
 
@@ -37,20 +61,28 @@ func main() {
 
 func execute_command(command string, args string) {
 	// fmt.Fprint(os.Stdout, command)
-	switch command {
-	case "echo":
-		fmt.Fprint(os.Stdout, args+"\n")
-		break
+	//
 
-	case "exit":
-		if len(args) > 0 && args == "0" {
-			os.Exit(0)
-		}
-		break
-
-	default:
+	if function, ok := shellBuiltIn[command]; ok {
+		function(args)
+	} else {
 		fmt.Fprint(os.Stdout, command+": command not found\n")
-
 	}
+
+	// switch command {
+	// case "echo":
+	// 	fmt.Fprint(os.Stdout, args+"\n")
+	// 	break
+
+	// case "exit":
+	// 	if len(args) > 0 && args == "0" {
+	// 		os.Exit(0)
+	// 	}
+	// 	break
+
+	// default:
+	// 	fmt.Fprint(os.Stdout, command+": command not found\n")
+
+	// }
 
 }
