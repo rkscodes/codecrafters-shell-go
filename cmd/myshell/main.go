@@ -16,22 +16,43 @@ var shellBuiltIn map[string]commandFunction
 
 func init() {
 	shellBuiltIn = map[string]commandFunction{
-		"echo": func(args string) {
-			fmt.Fprint(os.Stdout, args+"\n")
-		},
-		"exit": func(args string) {
-			if len(args) > 0 && args == "0" {
-				os.Exit(0)
-			}
-		},
-		"type": func(args string) {
-			if _, ok := shellBuiltIn[args]; ok {
-				fmt.Fprint(os.Stdout, args+" is a shell builtin\n")
-			} else {
-				fmt.Fprint(os.Stdout, args+": not found\n")
-			}
-		},
+		"echo": echo,
+		"exit": exit,
+		"type": type_,
 	}
+}
+
+func echo(args string) {
+	fmt.Fprint(os.Stdout, args+"\n")
+}
+
+func exit(args string) {
+	if len(args) > 0 && args == "0" {
+		os.Exit(0)
+	}
+}
+
+func type_(args string) {
+	if _, ok := shellBuiltIn[args]; ok {
+		fmt.Fprint(os.Stdout, args+" is a shell builtin\n")
+		return
+	}
+
+	pathEnv := os.Getenv("PATH")
+	// Split PATH into directories
+	paths := strings.Split(pathEnv, ":")
+
+	// Search each directory for the command
+	for _, path := range paths {
+		filePath := path + "/" + args
+		if _, err := os.Stat(filePath); err == nil {
+			fmt.Fprintf(os.Stdout, "%s\n", filePath)
+			return
+		}
+	}
+
+	//If found nowhere print this by default
+	fmt.Fprint(os.Stdout, args+": not found\n")
 }
 
 func main() {
@@ -68,21 +89,4 @@ func execute_command(command string, args string) {
 	} else {
 		fmt.Fprint(os.Stdout, command+": command not found\n")
 	}
-
-	// switch command {
-	// case "echo":
-	// 	fmt.Fprint(os.Stdout, args+"\n")
-	// 	break
-
-	// case "exit":
-	// 	if len(args) > 0 && args == "0" {
-	// 		os.Exit(0)
-	// 	}
-	// 	break
-
-	// default:
-	// 	fmt.Fprint(os.Stdout, command+": command not found\n")
-
-	// }
-
 }
