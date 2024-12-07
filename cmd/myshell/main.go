@@ -17,6 +17,10 @@ func main() {
 	for {
 		fmt.Fprint(os.Stdout, "$ ")
 		var input, _ = bufio.NewReader(os.Stdin).ReadString('\n')
+		// Test if we need to exit
+		if input == "exit 0\n" {
+			return
+		}
 		fmt.Fprint(os.Stdout, input[:len(input)-1]+": command not found\n")
 	}
 
