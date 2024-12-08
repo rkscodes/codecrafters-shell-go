@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -38,21 +39,28 @@ func type_(args string) {
 		return
 	}
 
+	if commandPath, err := findCommand(args); err == nil {
+		fmt.Fprintf(os.Stdout, "%s\n", commandPath)
+		return
+	}
+
+	//If found nowhere print this by default
+	fmt.Fprint(os.Stdout, args+": not found\n")
+}
+
+func findCommand(args string) (string, error) {
 	pathEnv := os.Getenv("PATH")
 	// Split PATH into directories
 	paths := strings.Split(pathEnv, ":")
 
 	// Search each directory for the command
 	for _, path := range paths {
-		filePath := path + "/" + args
-		if _, err := os.Stat(filePath); err == nil {
-			fmt.Fprintf(os.Stdout, "%s\n", filePath)
-			return
+		commandPath := path + "/" + args
+		if _, err := os.Stat(commandPath); err == nil {
+			return commandPath, nil
 		}
 	}
-
-	//If found nowhere print this by default
-	fmt.Fprint(os.Stdout, args+": not found\n")
+	return "", fmt.Errorf("command not found")
 }
 
 func main() {
@@ -82,11 +90,24 @@ func main() {
 
 func execute_command(command string, args string) {
 	// fmt.Fprint(os.Stdout, command)
-	//
 
 	if function, ok := shellBuiltIn[command]; ok {
 		function(args)
-	} else {
-		fmt.Fprint(os.Stdout, command+": command not found\n")
+		return
 	}
+
+	if commandPath, err := findCommand(command); err == nil {
+		var cmd *exec.Cmd
+		if len(args) > 0 {
+			cmd = exec.Command(commandPath, args)
+		} else {
+			cmd = exec.Command(commandPath)
+		}
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Run()
+		return
+	}
+
+	fmt.Fprint(os.Stdout, command+": command not found\n")
 }
