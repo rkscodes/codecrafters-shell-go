@@ -65,6 +65,15 @@ func pwd(args string) {
 }
 
 func cd(args string) {
+	args = strings.TrimSpace(args)
+	if args == "~" || args == "" {
+		err := os.Chdir(os.Getenv("HOME"))
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "$HOME variable not set\n")
+		}
+		return
+	}
+
 	err := os.Chdir(args)
 	if err != nil {
 		fmt.Fprintf(os.Stdout, "cd: %s: No such file or directory\n", args)
