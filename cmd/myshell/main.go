@@ -21,6 +21,7 @@ func init() {
 		"exit": exit,
 		"type": type_,
 		"pwd":  pwd,
+		"cd":   cd,
 	}
 }
 
@@ -61,6 +62,13 @@ func pwd(args string) {
 		return
 	}
 	fmt.Fprint(os.Stdout, dir, "\n")
+}
+
+func cd(args string) {
+	err := os.Chdir(args)
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "cd: %s: No such file or directory\n", args)
+	}
 }
 
 func findCommand(args string) (string, error) {
