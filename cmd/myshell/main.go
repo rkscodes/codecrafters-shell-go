@@ -20,6 +20,7 @@ func init() {
 		"echo": echo,
 		"exit": exit,
 		"type": type_,
+		"pwd":  pwd,
 	}
 }
 
@@ -46,6 +47,20 @@ func type_(args string) {
 
 	//If found nowhere print this by default
 	fmt.Fprint(os.Stdout, args+": not found\n")
+}
+
+func pwd(args string) {
+	if len(args) >= 1 {
+		fmt.Fprint(os.Stdout, "pwd: too many arguments\n")
+		return
+	}
+
+	dir, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(os.Stdout, "failed to get current working dir")
+		return
+	}
+	fmt.Fprint(os.Stdout, dir, "\n")
 }
 
 func findCommand(args string) (string, error) {
